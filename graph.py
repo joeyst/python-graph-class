@@ -95,7 +95,7 @@ class Graph:
       
     for (s, es) in s.items():
       self.edges[s].update(es)
-    
+      
   def has_cycle(self) -> bool:
     return _has_cycle(edges)
     
