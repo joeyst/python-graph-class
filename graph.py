@@ -111,7 +111,7 @@ class Graph:
     return g
       
   def has_cycle(self) -> bool:
-    return _has_cycle(edges)
+    return _has_cycle(self.edges)
     
   def __iter__(self) -> Iterable:
     """ Returns iterator where nodes are only visited after their parent nodes have been visited. """
