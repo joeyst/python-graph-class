@@ -13,6 +13,13 @@ def _convert_to_adj_list(edges):
       edges[parent_index].append(child_index)
   return edges
 
+def _inv_dict(dct) -> dict:
+  inv = defaultdict(set)
+  for (s, es) in dct.items():
+    for e in es:
+      inv[e].add(s)
+  return inv
+
 def _has_cycle(edges, start, verbose=False) -> bool:
   visited = set()
   path    = []
@@ -42,6 +49,28 @@ def _has_cycle(edges, start, verbose=False) -> bool:
     return False
   return _visit_node(start)
 
+def _visit_order(edges, start) -> list:
+  """ Returns order to visit such that every parent node is visited before a child node is visited. """
+  edges_inv = _inv_dict(edges)
+  
+  # Getting all nodes. 
+  to_visit = set()
+  for (s, es) in edges.items():
+    to_visit.add(s)
+    to_visit.update(es) 
+
+  visit_order = []
+  while len(to_visit) != 0:
+    to_remove = set()
+    for child in to_visit:
+      # If there aren't any parents left to visit.
+      if len(to_visit & edges_inv.get(child, set())) == 0:
+        # Add child to visit order and remove from to visit set. 
+        visit_order.append(child)
+        to_remove.add(child)
+    to_visit.difference_update(to_remove)
+  return visit_order
+
 class Graph:
   def __init__(self, start=0):
     self.start = start
@@ -60,9 +89,11 @@ class Graph:
     q = Queue()
     q.put(self.start)
     visit_order = []
+    visited = set()
     
     while not q.empty():
-      ...
+      curr_item = q.pop()
+      
       
   def _is_cycle(self, s, e) -> bool:
     edges = deepcopy(self.edges)
@@ -71,8 +102,7 @@ class Graph:
 
 if __name__ == "__main__":
   g = Graph()
-  # for _ in g:
-  #   pass
+  
   edges = {0: {1, 2}, 1: {2, 3}}
   start = 0
   print(_has_cycle(edges, start))
@@ -85,3 +115,8 @@ if __name__ == "__main__":
   start = 0
   print(_has_cycle(edges, start))
   
+  edges = {0: {1, 2}, 1: {2, 3}, 2: {3, 4}}
+  print(_visit_order(edges, start))
+
+  edges = {0: {1, 2, 3}, 1: {2, 3}, 2: {3, 4}, 3: {4, 5}}
+  print(_visit_order(edges, start))
