@@ -20,9 +20,13 @@ def _inv_dict(dct) -> dict:
       inv[e].add(s)
   return inv
 
-def _has_cycle(edges, start, verbose=False) -> bool:
+def _has_cycle(edges, verbose=False) -> bool:
   visited = set()
   path    = []
+
+  nodes   = set()
+  nodes.update(edges.keys())
+  [nodes.update(es) for es in edges.values()]
   
   # DFS, keeping track of visited nodes and adding/removing from stack for each node in each path. 
   # If node is reached multiple times in a path, then there is a cycle. 
@@ -47,9 +51,10 @@ def _has_cycle(edges, start, verbose=False) -> bool:
       path.pop()
       visited.add(s)
     return False
-  return _visit_node(start)
+  # Return if cycle found for any starting node. 
+  return any([_visit_node(node) for node in nodes])
 
-def _visit_order(edges, start) -> list:
+def _visit_order(edges) -> list:
   """ Returns order to visit such that every parent node is visited before a child node is visited. """
   edges_inv = _inv_dict(edges)
   
@@ -86,37 +91,30 @@ class Graph:
     
   def __iter__(self) -> Iterable:
     """ Returns iterator where nodes are only visited if their parent nodes have been visited. """
-    q = Queue()
-    q.put(self.start)
-    visit_order = []
-    visited = set()
-    
-    while not q.empty():
-      curr_item = q.pop()
-      
+    return _visit_order(self.edges)
       
   def _is_cycle(self, s, e) -> bool:
     edges = deepcopy(self.edges)
     edges[s].add(e)
-    return _has_cycle(edges, self.start)
+    return _has_cycle(edges)
 
 if __name__ == "__main__":
   g = Graph()
   
   edges = {0: {1, 2}, 1: {2, 3}}
   start = 0
-  print(_has_cycle(edges, start))
+  print(_has_cycle(edges))
   
   edges = {0: {1, 2}, 1: {2, 3}, 2: {3, 4}}
   start = 0
-  print(_has_cycle(edges, start))
+  print(_has_cycle(edges))
 
   edges = {0: {1, 2}, 1: {2, 3}, 2: {3, 4, 0}}
   start = 0
-  print(_has_cycle(edges, start))
+  print(_has_cycle(edges))
   
   edges = {0: {1, 2}, 1: {2, 3}, 2: {3, 4}}
-  print(_visit_order(edges, start))
+  print(_visit_order(edges))
 
   edges = {0: {1, 2, 3}, 1: {2, 3}, 2: {3, 4}, 3: {4, 5}}
-  print(_visit_order(edges, start))
+  print(_visit_order(edges))
