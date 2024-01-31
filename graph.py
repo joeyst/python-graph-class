@@ -5,14 +5,25 @@ from queue import Queue
 from copy import deepcopy
 StartIndex = EndIndex = int 
 
-def _convert_to_adj_dict(edges) -> dict[set]:
-  if isinstance(edges, list):
-    old_edges = edges 
-    edges = defaultdict(set)
-    for parent_index, child_index in old_edges:
-      edges[parent_index].add(child_index)
+def _convert_pair_list_to_adj_dict(edges: list[tuple[StartIndex, EndIndex]]) -> dict[set]:
+  old_edges = edges 
+  edges = defaultdict(set)
+  for parent_index, child_index in old_edges:
+    edges[parent_index].add(child_index)
   return edges
 
+def _convert_to_adj_dict(s, e):
+  # If pair of values. 
+  if e is not None:
+    s = {s: {e}}
+  
+  # If s is list of edge pairs. 
+  elif isinstance(s, list):
+    s = _convert_pair_list_to_adj_dict(s)
+
+  # Return dictionary[set] of edges. 
+  return s
+    
 def _inv_dict(dct) -> dict:
   inv = defaultdict(set)
   for (s, es) in dct.items():
@@ -87,26 +98,34 @@ class Graph:
     If dict (i.e., {start1: {end1, end2, ...}, ...}), iterates through edges. 
     """
     
-    if e is not None:
-      s = {s: {e}}
-    
-    elif isinstance(s, list):
-      s = _convert_to_adj_dict(s)
-      
-    for (s, es) in s.items():
+    for (s, es) in _convert_to_adj_dict(s, e).items():
       self.edges[s].update(es)
+      
+  def remove(self, s, e=None):
+    for (s, es) in _convert_to_adj_dict(s, e).items():
+      self.edges[s].difference_update(es)
+      
+  def copy(self) -> "Graph":
+    g = Graph()
+    g.add(self.edges)
+    return g
       
   def has_cycle(self) -> bool:
     return _has_cycle(edges)
     
   def __iter__(self) -> Iterable:
-    """ Returns iterator where nodes are only visited if their parent nodes have been visited. """
+    """ Returns iterator where nodes are only visited after their parent nodes have been visited. """
     return (i for i in _visit_order(self.edges))
     
   def __reversed__(self) -> "Graph":
     g = Graph()
     g.add(_inv_dict(self.edges))
     return g
+  
+  def __eq__(self, other: "Graph") -> bool:
+    if not isinstance(other, self.__class__):
+      raise TypeError(f"Expected {self.__class__}, got {type(other)}")
+    return self.edges == other.edges
   
   def __repr__(self) -> str:
     return f"Graph({self.edges})"
@@ -155,3 +174,19 @@ if __name__ == "__main__":
   
   print(list(reversed(g)))
   print(reversed(g))
+
+  print(reversed(reversed(g)).edges == g.edges)
+  print(reversed(g).edges == g.edges)
+  
+  g_copy = g.copy()
+  g_copy.remove(2, 8)
+  print(list(g_copy))
+  print(g_copy)
+  
+  g_copy.add(2, 8)
+  print(g == g_copy)
+  
+  try:
+    g == 1
+  except Exception as e:
+    print(e)
