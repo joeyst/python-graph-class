@@ -5,12 +5,12 @@ from queue import Queue
 from copy import deepcopy
 StartIndex = EndIndex = int 
 
-def _convert_to_adj_list(edges):
+def _convert_to_adj_dict(edges) -> dict[set]:
   if isinstance(edges, list):
     old_edges = edges 
-    edges = defaultdict(list)
+    edges = defaultdict(set)
     for parent_index, child_index in old_edges:
-      edges[parent_index].append(child_index)
+      edges[parent_index].add(child_index)
   return edges
 
 def _inv_dict(dct) -> dict:
@@ -77,27 +77,40 @@ def _visit_order(edges) -> list:
   return visit_order
 
 class Graph:
-  def __init__(self, start=0):
-    self.start = start
+  def __init__(self):
     self.edges = defaultdict(set)
-    self.edges_inv = defaultdict(set)
+
+  def add(self, s, e=None):
+    """
+    If e is not None, converts to dict. 
+    If s is [(start, end), ...], converts to dict. 
+    If dict (i.e., {start1: {end1, end2, ...}, ...}), iterates through edges. 
+    """
     
-  def add_edge(self, s, e) -> bool:
-    if not self._is_cycle(s, e):
-      self.edges[s].add(e)
-      self.edges_inv[e].add(s)
-    else:
-      raise Exception(f"add_edge({s}, {e}) causes a cycle in graph {str(self)}.")
+    if e is not None:
+      s = {s: {e}}
+    
+    elif isinstance(s, list):
+      s = _convert_to_adj_dict(s)
+      
+    for (s, es) in s.items():
+      self.edges[s].update(es)
+    
+  def has_cycle(self) -> bool:
+    return _has_cycle(edges)
     
   def __iter__(self) -> Iterable:
     """ Returns iterator where nodes are only visited if their parent nodes have been visited. """
-    return _visit_order(self.edges)
-      
-  def _is_cycle(self, s, e) -> bool:
-    edges = deepcopy(self.edges)
-    edges[s].add(e)
-    return _has_cycle(edges)
-
+    return (i for i in _visit_order(self.edges))
+    
+  def __reversed__(self) -> "Graph":
+    g = Graph()
+    g.add(_inv_dict(self.edges))
+    return g
+  
+  def __repr__(self) -> str:
+    return f"Graph({self.edges})"
+  
 if __name__ == "__main__":
   g = Graph()
   
@@ -118,3 +131,27 @@ if __name__ == "__main__":
 
   edges = {0: {1, 2, 3}, 1: {2, 3}, 2: {3, 4}, 3: {4, 5}}
   print(_visit_order(edges))
+
+  print("Graph========")
+  g.add(0, 1)
+  print(list(g))
+  print(g)
+    
+  g.add(edges)
+  print(list(g))
+  print(g)
+    
+  g.add({6: {3}, 7: {3}})
+  print(list(g))
+  print(g)
+
+  g.add({8: {7}})
+  print(list(g))
+  print(g)
+  
+  g.add(2, 8)
+  print(list(g))
+  print(g)
+  
+  print(list(reversed(g)))
+  print(reversed(g))
