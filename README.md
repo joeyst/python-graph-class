@@ -3,7 +3,9 @@
 Contains `Graph` class. 
 - Add/remove edges/dicts/lists. 
 - Check if has cycle. 
-- `copy`/`__iter__`/`__reversed__`/`__eq__`/`__repr__`. 
+- `__iter__`/`__reversed__`/`.items`/`.keys`/`.values`. 
+`.__getitem_`/`.children`/`.parents`. 
+- `copy`/`__eq__`/`__repr__`. 
 
 ### Install 
 `python -m pip install -U git+https://github.com/joeyst/python-graph-class.git`

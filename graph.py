@@ -112,26 +112,31 @@ class Graph:
       
   def has_cycle(self) -> bool:
     return _has_cycle(self.edges)
-    
-  def __iter__(self) -> Iterable[tuple[StartIndex, set[EndIndex]]]:
-    """ Returns iterator where nodes are only visited after their parent nodes have been visited. """
-    return ((i, self.edges[i]) for i in _visit_order(self.edges))
   
   def keys(self) -> Iterable[StartIndex]:
+    """ Returns iterator of parent nodes where the parent nodes are visited before the child nodes (child node sets not returned here-- only the parents). """
     return (i for i in _visit_order(self.edges))
   
   def values(self) -> Iterable[set[EndIndex]]:
+    """ Returns iterator of sets of child nodes where the parent nodes (not returned here-- only the child sets are returned) are visited before the child nodes. """
     return (self.edges[i] for i in _visit_order(self.edges))
   
   def items(self) -> Iterable[tuple[StartIndex, set[EndIndex]]]:
+    """ Returns iterator where nodes are only visited after their parent nodes have been visited. """
     return iter(self)
+  
+  def __iter__(self) -> Iterable[tuple[StartIndex, set[EndIndex]]]:
+    """ Returns iterator where nodes are only visited after their parent nodes have been visited. """
+    return ((i, self.edges[i]) for i in _visit_order(self.edges))
     
   def __reversed__(self) -> "Graph":
+    """ Returns new Graph with inverted graph (i.e., a graph where all current (parent, child) edges become (child, parent) edges). """
     g = Graph()
     g.add(_inv_dict(self.edges))
     return g
   
   def __eq__(self, other: "Graph") -> bool:
+    """ Returns provided Graph's edges == self's edges. """
     if not isinstance(other, self.__class__):
       raise TypeError(f"Expected {self.__class__}, got {type(other)}")
     return self.edges == other.edges
@@ -140,7 +145,15 @@ class Graph:
     return f"Graph({self.edges})"
 
   def __getitem__(self, item) -> set:
+    """ Returns children node of a given parent node. """
     return set(self.edges[item])
+  
+  def children(self, item) -> set:
+    return self[item]
+  
+  def parents(self, item) -> set:
+    """ WARNING: instantiates new graph. """
+    return reversed(self)[item]
   
 if __name__ == "__main__":
   g = Graph()
