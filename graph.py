@@ -116,6 +116,15 @@ class Graph:
   def __iter__(self) -> Iterable[tuple[StartIndex, set[EndIndex]]]:
     """ Returns iterator where nodes are only visited after their parent nodes have been visited. """
     return ((i, self.edges[i]) for i in _visit_order(self.edges))
+  
+  def keys(self) -> Iterable[StartIndex]:
+    return (i for i in _visit_order(self.edges))
+  
+  def values(self) -> Iterable[set[EndIndex]]:
+    return (self.edges[i] for i in _visit_order(self.edges))
+  
+  def items(self) -> Iterable[tuple[StartIndex, set[EndIndex]]]:
+    return iter(self)
     
   def __reversed__(self) -> "Graph":
     g = Graph()
@@ -196,3 +205,7 @@ if __name__ == "__main__":
     
   print(g[0])
   print(reversed(g)[0])
+  
+  print("keys:", list(g.keys()))
+  print("values:", list(g.values()))
+  print("items:", list(g.items()))
