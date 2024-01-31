@@ -129,6 +129,9 @@ class Graph:
   
   def __repr__(self) -> str:
     return f"Graph({self.edges})"
+
+  def __getitem__(self, item) -> set:
+    return set(self.edges[item])
   
 if __name__ == "__main__":
   g = Graph()
@@ -190,3 +193,6 @@ if __name__ == "__main__":
     g == 1
   except Exception as e:
     print(e)
+    
+  print(g[0])
+  print(reversed(g)[0])
