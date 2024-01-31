@@ -113,9 +113,9 @@ class Graph:
   def has_cycle(self) -> bool:
     return _has_cycle(self.edges)
     
-  def __iter__(self) -> Iterable:
+  def __iter__(self) -> Iterable[tuple[StartIndex, set[EndIndex]]]:
     """ Returns iterator where nodes are only visited after their parent nodes have been visited. """
-    return (i for i in _visit_order(self.edges))
+    return ((i, self.edges[i]) for i in _visit_order(self.edges))
     
   def __reversed__(self) -> "Graph":
     g = Graph()
